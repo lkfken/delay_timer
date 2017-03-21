@@ -22,7 +22,15 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+# You could pass in a string
+timer = DelayTimer.create(:delay_until => '5:00pm')
+timer.start
+
+# or you could pass in a Time object
+timer = DelayTimer.create(:delay_until => Date.today.next_day.to_time)
+timer.start
+```
 
 ## Development
 
