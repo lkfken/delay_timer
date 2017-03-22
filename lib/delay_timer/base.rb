@@ -13,7 +13,7 @@ class DelayTimer
     end
 
     def start
-      if lapse_seconds > (24 * 60 * 60)
+      if lapse_seconds >= (24 * 60 * 60)
         now_time    = now.strftime('%c')
         target_time = specified_time.strftime('%c')
         wait = Time.at(lapse_seconds).utc.to_datetime.prev_day.strftime('%d:%H:%M:%S')
