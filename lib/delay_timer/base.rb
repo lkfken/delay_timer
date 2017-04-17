@@ -1,5 +1,6 @@
 require 'logger'
 require 'ruby-progressbar'
+require_relative '../lapse'
 
 class DelayTimer
   class Base
@@ -12,20 +13,21 @@ class DelayTimer
       @debug       = debug
     end
 
-    def start
-      if lapse_seconds >= (24 * 60 * 60)
-        now_time    = now.strftime('%c')
-        target_time = specified_time.strftime('%c')
-        wait = Time.at(lapse_seconds).utc.to_datetime.prev_day.strftime('%d:%H:%M:%S')
-      else
-        now_time    = now.strftime('%H:%M:%S')
-        target_time = specified_time.strftime('%H:%M:%S')
-        wait = Time.at(lapse_seconds).utc.to_datetime.strftime('%H:%M:%S')
+    def lapse
+      @lapse ||= begin
+        interval          = ::Lapse.new(:time_begin => now, :time_end => delay_until)
+        interval.time_end = interval.time_end.next_day while interval.specified_time_has_passed?
+        interval
       end
-      msg = ["Time now: #{now_time}.", "Target: #{target_time}.", "Wait: #{wait}."].join(' ')
-      logger.info msg unless debug
+    end
 
-      pause(lapse_seconds) unless debug
+    def specified_time_has_passed?
+      specified_time < now
+    end
+
+    def start
+      logger.info lapse.to_s #unless debug
+      pause unless debug
     end
 
     def specified_time
@@ -33,9 +35,9 @@ class DelayTimer
         case delay_until
         when String
           Time.parse(delay_until)
-        when Time, DateTime
+        when DateTime
           delay_until
-        when Date
+        when Date, Time
           delay_until.to_datetime
         else
           raise "Don't know how to handle #{delay_until.class}!"
@@ -44,24 +46,16 @@ class DelayTimer
     end
 
     def lapse_seconds
-      @lapse_seconds ||= begin
-        time = specified_time
-        time = time.to_datetime.next_day.to_time if specified_time_has_passed?
-        ((time - now)*24*60*60).ceil.to_i
-      end
+      lapse.sec
     end
 
     alias_method :total_seconds, :lapse_seconds
 
     private
 
-    def specified_time_has_passed?
-      specified_time < now
-    end
-
-    def pause(seconds)
-      title       = "Wait #{Time.at(seconds).utc.strftime('%H:%M:%S')}"
-      progressbar = ProgressBar.create(title: title, :total => seconds)
+    def pause
+      title, seconds = lapse.wait_display, lapse.sec
+      progressbar    = ProgressBar.create(title: title, :total => seconds)
       (1..seconds).each do
         progressbar.increment
         sleep(1)

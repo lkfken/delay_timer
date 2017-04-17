@@ -34,4 +34,22 @@ describe DelayTimer do
       timer.start
     end
   end
+  context 'end time before start time' do
+    let(:timer) { DelayTimer.create(:delay_until => (DateTime.now - (30/24.0)), :debug => true) }
+    it '#specified_time_has_passed?' do
+      expect(timer.send(:specified_time_has_passed?)).to be_truthy
+    end
+    it '#start' do
+      timer.start
+    end
+  end
+  context 'end time before start time' do
+    let(:timer) { DelayTimer.create(:delay_until => Time.parse('8:52am'), :debug => true) }
+    it '#specified_time_has_passed?' do
+      expect(timer.send(:specified_time_has_passed?)).to be_truthy
+    end
+    it '#start' do
+      timer.start
+    end
+  end
 end
