@@ -18,6 +18,7 @@ describe DelayTimer do
       timer.start
     end
   end
+
   context 'wait more than 24 hours' do
     let(:time) { DateTime.now.next_day(7) }
     let(:timer) { DelayTimer.create(:delay_until => time, :debug => true) }
@@ -34,6 +35,7 @@ describe DelayTimer do
       timer.start
     end
   end
+
   context 'end time before start time' do
     let(:timer) { DelayTimer.create(:delay_until => (DateTime.now - (30/24.0)), :debug => true) }
     it '#specified_time_has_passed?' do
@@ -43,6 +45,7 @@ describe DelayTimer do
       timer.start
     end
   end
+
   context 'end time before start time' do
     let(:timer) { DelayTimer.create(:delay_until => Time.parse('8:52am'), :debug => true) }
     it '#specified_time_has_passed?' do
@@ -50,6 +53,12 @@ describe DelayTimer do
     end
     it '#start' do
       timer.start
+    end
+  end
+
+  context 'run the block after pause' do
+    it '.run' do
+      DelayTimer.run(:delay_until => Time.parse('3:48pm'), :debug => true) { puts 'Hello' }
     end
   end
 end
