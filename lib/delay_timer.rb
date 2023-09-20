@@ -8,7 +8,7 @@ class DelayTimer
     yield
   end
 
-  def self.create(*args)
-    DelayTimer::Base.new(*args)
+  def self.create(**args)
+    DelayTimer::Base.new(**args)
   end
 end
